@@ -90,7 +90,7 @@ final class MBWSB_Frontend {
 	}
 
 	/**
-	 * Enqueue CSS; JS yalnızca birden fazla hat için.
+	 * Enqueue CSS; JS her zaman (tek hat için bile — küçük dosya, çıkışta erken return).
 	 */
 	public function enqueue() {
 		$branches = self::get_public_branches();
@@ -115,22 +115,20 @@ final class MBWSB_Frontend {
 
 		wp_enqueue_style( 'mbwsb-frontend', $css, array(), $ver_css );
 
-		if ( count( $branches ) > 1 ) {
-			wp_enqueue_script( 'mbwsb-frontend', $js, array(), $ver_js, true );
+		wp_enqueue_script( 'mbwsb-frontend', $js, array(), $ver_js, true );
 
-			wp_localize_script(
-				'mbwsb-frontend',
-				'mbwsbData',
-				array(
-					'mode'     => 'multi',
-					'branches' => $branches,
-					'i18n'     => array(
-						'openMenu'  => __( 'WhatsApp hatlarını aç', 'multi-branch-whatsapp-sticky-button' ),
-						'closeMenu' => __( 'Menüyü kapat', 'multi-branch-whatsapp-sticky-button' ),
-					),
-				)
-			);
-		}
+		wp_localize_script(
+			'mbwsb-frontend',
+			'mbwsbData',
+			array(
+				'mode'     => count( $branches ) > 1 ? 'multi' : 'single',
+				'branches' => $branches,
+				'i18n'     => array(
+					'openMenu'  => __( 'WhatsApp hatlarını aç', 'multi-branch-whatsapp-sticky-button' ),
+					'closeMenu' => __( 'Menüyü kapat', 'multi-branch-whatsapp-sticky-button' ),
+				),
+			)
+		);
 	}
 
 	/**
@@ -171,8 +169,17 @@ final class MBWSB_Frontend {
 			return;
 		}
 
+		$branches_json = wp_json_encode(
+			$branches,
+			JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_UNESCAPED_UNICODE
+		);
 		?>
-		<div id="mbwsb-root" class="mbwsb <?php echo esc_attr( $pos_class ); ?>" data-mbwsb-root>
+		<div
+			id="mbwsb-root"
+			class="mbwsb <?php echo esc_attr( $pos_class ); ?>"
+			data-mbwsb-root
+			data-mbwsb-branches="<?php echo esc_attr( $branches_json ); ?>"
+		>
 			<button
 				type="button"
 				class="mbwsb__trigger"
