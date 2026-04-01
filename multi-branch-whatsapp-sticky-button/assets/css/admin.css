@@ -1,0 +1,22 @@
+.mbwsb-admin-wrap .mbwsb-table {
+	margin-top: 1em;
+	max-width: 900px;
+}
+
+.mbwsb-admin-wrap .mbwsb-table th,
+.mbwsb-admin-wrap .mbwsb-table td {
+	vertical-align: middle;
+}
+
+.mbwsb-admin-wrap .mbwsb-col-actions {
+	width: 6rem;
+}
+
+.mbwsb-admin-wrap .mbwsb-remove-row {
+	color: #b32d2e;
+}
+
+.mbwsb-admin-wrap .mbwsb-remove-row:hover,
+.mbwsb-admin-wrap .mbwsb-remove-row:focus {
+	color: #8a2424;
+}
