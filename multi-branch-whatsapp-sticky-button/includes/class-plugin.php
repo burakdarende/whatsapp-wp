@@ -14,6 +14,9 @@ final class MBWSB_Plugin {
 
 	const OPTION_BRANCHES = 'mbwsb_branches';
 
+	/** @var string 'left'|'right' */
+	const OPTION_POSITION = 'mbwsb_position';
+
 	/**
 	 * @var MBWSB_Plugin|null
 	 */

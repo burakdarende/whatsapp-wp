@@ -2,7 +2,7 @@
 	'use strict';
 
 	var data = typeof mbwsbData === 'undefined' ? null : mbwsbData;
-	if (!data || !data.branches || !data.branches.length) {
+	if (!data || !data.branches || data.branches.length < 2) {
 		return;
 	}
 
@@ -14,8 +14,6 @@
 	if (!root || !trigger || !panel || !list) {
 		return;
 	}
-
-	root.removeAttribute('hidden');
 
 	function buildList() {
 		list.innerHTML = '';

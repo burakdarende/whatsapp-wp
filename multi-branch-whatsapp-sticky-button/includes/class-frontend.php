@@ -33,7 +33,17 @@ final class MBWSB_Frontend {
 	}
 
 	/**
-	 * Build safe branch list for JS (label + wa.me URL).
+	 * Konum: sol veya sağ alt.
+	 *
+	 * @return string 'left'|'right'
+	 */
+	public static function get_position() {
+		$pos = get_option( MBWSB_Plugin::OPTION_POSITION, 'left' );
+		return in_array( $pos, array( 'left', 'right' ), true ) ? $pos : 'left';
+	}
+
+	/**
+	 * Build safe branch list (label + wa.me URL). Telefon zorunlu; boş etiket çoklu satırda yedeklenir.
 	 *
 	 * @return array<int, array{label: string, url: string}>
 	 */
@@ -54,7 +64,7 @@ final class MBWSB_Frontend {
 			$phone = isset( $row['phone'] ) ? (string) $row['phone'] : '';
 			$digits = preg_replace( '/\D+/', '', $phone );
 
-			if ( '' === $label || '' === $digits ) {
+			if ( '' === $digits ) {
 				continue;
 			}
 
@@ -67,11 +77,20 @@ final class MBWSB_Frontend {
 			);
 		}
 
+		$count = count( $out );
+		foreach ( $out as $i => &$item ) {
+			if ( $count > 1 && '' === $item['label'] ) {
+				/* translators: %d: branch index 1-based */
+				$item['label'] = sprintf( __( 'Hat %d', 'multi-branch-whatsapp-sticky-button' ), $i + 1 );
+			}
+		}
+		unset( $item );
+
 		return $out;
 	}
 
 	/**
-	 * Enqueue CSS/JS only when there is at least one valid branch.
+	 * Enqueue CSS; JS yalnızca birden fazla hat için.
 	 */
 	public function enqueue() {
 		$branches = self::get_public_branches();
@@ -95,23 +114,27 @@ final class MBWSB_Frontend {
 		}
 
 		wp_enqueue_style( 'mbwsb-frontend', $css, array(), $ver_css );
-		wp_enqueue_script( 'mbwsb-frontend', $js, array(), $ver_js, true );
 
-		wp_localize_script(
-			'mbwsb-frontend',
-			'mbwsbData',
-			array(
-				'branches' => $branches,
-				'i18n'     => array(
-					'openMenu'  => __( 'WhatsApp hatlarını aç', 'multi-branch-whatsapp-sticky-button' ),
-					'closeMenu' => __( 'Menüyü kapat', 'multi-branch-whatsapp-sticky-button' ),
-				),
-			)
-		);
+		if ( count( $branches ) > 1 ) {
+			wp_enqueue_script( 'mbwsb-frontend', $js, array(), $ver_js, true );
+
+			wp_localize_script(
+				'mbwsb-frontend',
+				'mbwsbData',
+				array(
+					'mode'     => 'multi',
+					'branches' => $branches,
+					'i18n'     => array(
+						'openMenu'  => __( 'WhatsApp hatlarını aç', 'multi-branch-whatsapp-sticky-button' ),
+						'closeMenu' => __( 'Menüyü kapat', 'multi-branch-whatsapp-sticky-button' ),
+					),
+				)
+			);
+		}
 	}
 
 	/**
-	 * Print root markup in footer (list filled by JS from localized data).
+	 * Print root markup: tek hat = doğrudan link; çoklu = buton + panel (JS doldurur).
 	 */
 	public function render() {
 		$branches = self::get_public_branches();
@@ -119,8 +142,37 @@ final class MBWSB_Frontend {
 			return;
 		}
 
+		$pos = self::get_position();
+		$pos_class = 'mbwsb--' . $pos;
+
+		$icon = self::whatsapp_svg();
+
+		if ( count( $branches ) === 1 ) {
+			$b = $branches[0];
+			$url = $b['url'];
+			$aria = '' !== $b['label']
+				? $b['label']
+				: __( 'WhatsApp ile iletişim', 'multi-branch-whatsapp-sticky-button' );
+			?>
+			<div id="mbwsb-root" class="mbwsb <?php echo esc_attr( $pos_class ); ?>">
+				<a
+					class="mbwsb__trigger mbwsb__trigger--direct"
+					href="<?php echo esc_url( $url ); ?>"
+					target="_blank"
+					rel="noopener noreferrer"
+					aria-label="<?php echo esc_attr( $aria ); ?>"
+				>
+					<span class="mbwsb__trigger-icon" aria-hidden="true">
+						<?php echo $icon; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- inline SVG. ?>
+					</span>
+				</a>
+			</div>
+			<?php
+			return;
+		}
+
 		?>
-		<div id="mbwsb-root" class="mbwsb" data-mbwsb-root hidden>
+		<div id="mbwsb-root" class="mbwsb <?php echo esc_attr( $pos_class ); ?>" data-mbwsb-root>
 			<button
 				type="button"
 				class="mbwsb__trigger"
@@ -131,7 +183,7 @@ final class MBWSB_Frontend {
 				aria-label="<?php echo esc_attr__( 'WhatsApp ile iletişim', 'multi-branch-whatsapp-sticky-button' ); ?>"
 			>
 				<span class="mbwsb__trigger-icon" aria-hidden="true">
-					<?php echo self::whatsapp_svg(); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- inline SVG. ?>
+					<?php echo $icon; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- inline SVG. ?>
 				</span>
 			</button>
 			<div

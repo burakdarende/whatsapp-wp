@@ -20,3 +20,21 @@
 .mbwsb-admin-wrap .mbwsb-remove-row:focus {
 	color: #8a2424;
 }
+
+.mbwsb-fieldset-position {
+	margin: 1.5em 0;
+	padding: 1em 1.25em;
+	border: 1px solid #c3c4c7;
+	border-radius: 4px;
+	max-width: 900px;
+}
+
+.mbwsb-fieldset-position legend {
+	font-weight: 600;
+	padding: 0 0.5em;
+}
+
+.mbwsb-fieldset-position label {
+	display: inline-block;
+	margin-right: 1.5em;
+}

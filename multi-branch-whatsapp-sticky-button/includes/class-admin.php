@@ -34,6 +34,25 @@ final class MBWSB_Admin {
 		add_action( 'admin_init', array( $this, 'register_settings' ) );
 		add_action( 'admin_menu', array( $this, 'add_menu' ) );
 		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_assets' ) );
+		add_filter(
+			'plugin_action_links_' . plugin_basename( MBWSB_PLUGIN_FILE ),
+			array( $this, 'plugin_action_links' )
+		);
+	}
+
+	/**
+	 * Eklenti listesinde "Ayarlar" kısayolu (options-general.php alt sayfası).
+	 *
+	 * @param array<int, string> $links Mevcut aksiyon linkleri.
+	 * @return array<int, string>
+	 */
+	public function plugin_action_links( $links ) {
+		$url = admin_url( 'options-general.php?page=' . self::PAGE_SLUG );
+		array_unshift(
+			$links,
+			'<a href="' . esc_url( $url ) . '">' . esc_html__( 'Ayarlar', 'multi-branch-whatsapp-sticky-button' ) . '</a>'
+		);
+		return $links;
 	}
 
 	/**
@@ -49,6 +68,24 @@ final class MBWSB_Admin {
 				'default'           => array(),
 			)
 		);
+		register_setting(
+			self::OPTION_GROUP,
+			MBWSB_Plugin::OPTION_POSITION,
+			array(
+				'type'              => 'string',
+				'sanitize_callback' => array( $this, 'sanitize_position' ),
+				'default'           => 'left',
+			)
+		);
+	}
+
+	/**
+	 * @param mixed $value Raw value.
+	 * @return string
+	 */
+	public function sanitize_position( $value ) {
+		$value = is_string( $value ) ? sanitize_text_field( $value ) : '';
+		return in_array( $value, array( 'left', 'right' ), true ) ? $value : 'left';
 	}
 
 	/**
@@ -73,7 +110,7 @@ final class MBWSB_Admin {
 			$phone = isset( $row['phone'] ) ? wp_unslash( $row['phone'] ) : '';
 			$phone = preg_replace( '/\D+/', '', $phone );
 
-			if ( '' === $label && '' === $phone ) {
+			if ( '' === $phone ) {
 				continue;
 			}
 
@@ -152,12 +189,16 @@ final class MBWSB_Admin {
 		<div class="wrap mbwsb-admin-wrap">
 			<h1><?php echo esc_html( get_admin_page_title() ); ?></h1>
 			<p class="description">
-				<?php esc_html_e( 'Şube adı ve ülke kodu dahil telefon numarası girin. Örnek: 905551234567', 'multi-branch-whatsapp-sticky-button' ); ?>
+				<?php esc_html_e( 'Telefon zorunludur (ülke kodu ile, örn. 905551234567). Tek numarada buton doğrudan WhatsApp’a gider; birden fazla satırda menüden şube seçilir. Şube adı isteğe bağlıdır.', 'multi-branch-whatsapp-sticky-button' ); ?>
 			</p>
 
 			<form action="options.php" method="post">
 				<?php
 				settings_fields( self::OPTION_GROUP );
+				$position = get_option( MBWSB_Plugin::OPTION_POSITION, 'left' );
+				if ( ! in_array( $position, array( 'left', 'right' ), true ) ) {
+					$position = 'left';
+				}
 				?>
 
 				<table class="widefat striped mbwsb-table">
@@ -184,6 +225,28 @@ final class MBWSB_Admin {
 						<?php esc_html_e( 'Yeni Hat Ekle', 'multi-branch-whatsapp-sticky-button' ); ?>
 					</button>
 				</p>
+
+				<fieldset class="mbwsb-fieldset-position">
+					<legend><?php esc_html_e( 'Buton konumu (ön yüz)', 'multi-branch-whatsapp-sticky-button' ); ?></legend>
+					<label>
+						<input
+							type="radio"
+							name="<?php echo esc_attr( MBWSB_Plugin::OPTION_POSITION ); ?>"
+							value="left"
+							<?php checked( $position, 'left' ); ?>
+						/>
+						<?php esc_html_e( 'Sol alt', 'multi-branch-whatsapp-sticky-button' ); ?>
+					</label>
+					<label>
+						<input
+							type="radio"
+							name="<?php echo esc_attr( MBWSB_Plugin::OPTION_POSITION ); ?>"
+							value="right"
+							<?php checked( $position, 'right' ); ?>
+						/>
+						<?php esc_html_e( 'Sağ alt', 'multi-branch-whatsapp-sticky-button' ); ?>
+					</label>
+				</fieldset>
 
 				<?php submit_button( __( 'Kaydet', 'multi-branch-whatsapp-sticky-button' ) ); ?>
 			</form>
