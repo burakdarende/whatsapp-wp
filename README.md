@@ -24,13 +24,25 @@ WordPress eklentisi: sitede sol altta sabit WhatsApp butonu; yönetimden birden 
 
 Eklenti [Plugin Update Checker](https://github.com/YahnisElsts/plugin-update-checker) (Composer ile `vendor/` içinde) kullanır.
 
-1. Ana dosyada `MBWSB_GITHUB_REPO_URL` sabitini doldur: `https://github.com/kullanici/repo-adı/` (sonunda `/` olsun).
-2. **Sadece `git push` güncelleme göstermez.** WordPress, GitHub’daki **sürümü** (Release veya tag) kontrol eder. Yeni sürüm için:
-   - Plugin başlığındaki `Version:` değerini artır (ör. `1.0.1`).
-   - GitHub’da **Release** oluştur; tag adı genelde `v1.0.1` veya `1.0.1` olabilir.
-   - Bu repoda eklenti `multi-branch-whatsapp-sticky-button/` alt klasöründe olduğu için, Release’e **`multi-branch-whatsapp-sticky-button.zip`** ekle: zip açılınca içinde `multi-branch-whatsapp-sticky-button/` klasörü ve içinde ana PHP dosyası olsun (WordPress eklenti zip yapısı).
-3. Özel (private) repo için `MBWSB_GITHUB_TOKEN` içine yalnızca repo okuma yetkili bir GitHub token yaz.
-4. Geliştirme: eklenti klasöründe `composer install` (veya `composer update`) ile `vendor` oluşturulur; dağıtımda `vendor` klasörünü sunucuya da at.
+1. Ana dosyada `MBWSB_GITHUB_REPO_URL` sabitini doldur: `https://github.com/kullanici/repo-adı` (son `/` kodda otomatik eklenir).
+2. WordPress güncellemesi **GitHub Release** üzerinden gelir; release’te **`multi-branch-whatsapp-sticky-button.zip`** dosyası olmalı (iç yapı: zip → `multi-branch-whatsapp-sticky-button/` → `multi-branch-whatsapp-sticky-button.php`). GitHub’ın “Source code (zip)” arşivi tek başına genelde **yanlış klasör adı** verir; bu yüzden güncelleme **başarısız** olur. PUC bu yüzden release **asset** adını bekler.
+3. Özel (private) repo için `MBWSB_GITHUB_TOKEN` içine repo okuma yetkili bir GitHub token yaz (wp-config.php’de tanımlamak daha güvenli).
+4. Geliştirme: eklenti klasöründe `composer install`; dağıtımda `vendor` sunucuda da olsun.
+
+### Otomatik Release (GitHub Actions)
+
+`.github/workflows/release-plugin.yml`: **`main`** veya **`master`** dalına push olduğunda (eklenti klasörü değiştiyse) workflow çalışır; `multi-branch-whatsapp-sticky-button.php` içindeki **`* Version: X.Y.Z`** değerini okur, aynı tag’li release yoksa **`multi-branch-whatsapp-sticky-button.zip`** üretip **`vX.Y.Z`** release oluşturur.
+
+- Yeni sürüm: hem `* Version:` hem `define( 'MBWSB_VERSION', ... )` değerini artır → commit → push.
+- Aynı sürüm numarası için zaten release varsa workflow zip atlamaz (tekrar release oluşturmaz).
+- Elle tetiklemek için: repo → **Actions** → **Release plugin (GitHub)** → **Run workflow**.
+
+### Güncelleme “başarısız” olursa
+
+- Sunucuda `wp-content` yazılabilir mi, disk dolu mu.
+- Önbellek / güvenlik eklentisi dış indirmeyi kesiyor mu.
+- Release’te **`multi-branch-whatsapp-sticky-button.zip`** gerçekten var mı (Actions ile üretildiyse olur).
+- Private repo: `MBWSB_GITHUB_TOKEN` tanımlı mı.
 
 ## Lisans
 

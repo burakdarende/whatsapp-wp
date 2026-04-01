@@ -2,7 +2,7 @@
 /**
  * Plugin Name:       Multi-Branch WhatsApp Sticky Button
  * Description:       Sol altta sabit WhatsApp butonu; birden fazla şube hattı ve açılır menü.
- * Version:           1.0.0
+ * Version:           1.0.2
  * Requires at least: 5.8
  * Requires PHP:      7.4
  * Author:            burakdarende
@@ -15,7 +15,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'MBWSB_VERSION', '1.0.0' );
+define( 'MBWSB_VERSION', '1.0.2' );
 define( 'MBWSB_PLUGIN_FILE', __FILE__ );
 define( 'MBWSB_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 define( 'MBWSB_PLUGIN_URL', plugin_dir_url( __FILE__ ) );

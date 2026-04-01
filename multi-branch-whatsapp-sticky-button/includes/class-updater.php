@@ -22,11 +22,14 @@ require_once $mbwsb_puc_autoload;
 
 use YahnisElsts\PluginUpdateChecker\v5\PucFactory;
 
+// PUC GitHub URL sonunda / olmalı (parse tutarlılığı).
+$mbwsb_github_repo = rtrim( trim( (string) MBWSB_GITHUB_REPO_URL ), '/' ) . '/';
+
 /**
  * @var \YahnisElsts\PluginUpdateChecker\v5p0\Vcs\PluginUpdateChecker $mbwsb_update_checker
  */
 $mbwsb_update_checker = PucFactory::buildUpdateChecker(
-	MBWSB_GITHUB_REPO_URL,
+	$mbwsb_github_repo,
 	MBWSB_PLUGIN_FILE,
 	'multi-branch-whatsapp-sticky-button',
 	12
