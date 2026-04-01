@@ -1,0 +1,11 @@
+{
+    "name": "burakdarende/multi-branch-whatsapp-sticky-button",
+    "description": "WordPress plugin (local composer for PUC)",
+    "require": {
+        "php": ">=7.4",
+        "yahnis-elsts/plugin-update-checker": "^5.0"
+    },
+    "config": {
+        "sort-packages": true
+    }
+}

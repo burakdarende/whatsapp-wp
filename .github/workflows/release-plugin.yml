@@ -1,0 +1,79 @@
+# main'e push + eklenti klasöründe değişiklik: plugin başlığındaki Version için GitHub Release + doğru WP zip'i
+# Önkoşul: multi-branch-whatsapp-sticky-button.php içinde * Version: X.Y.Z ve define( 'MBWSB_VERSION' ) aynı olmalı.
+
+name: Release plugin (GitHub)
+
+on:
+  push:
+    branches:
+      - main
+      - master
+    paths:
+      - 'multi-branch-whatsapp-sticky-button/**'
+      - '.github/workflows/release-plugin.yml'
+
+  workflow_dispatch:
+
+concurrency:
+  group: release-plugin-${{ github.repository }}
+  cancel-in-progress: true
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Extract plugin version
+        id: meta
+        run: |
+          set -e
+          FILE="multi-branch-whatsapp-sticky-button/multi-branch-whatsapp-sticky-button.php"
+          VER=$(grep -E '^\s*\* Version:' "$FILE" | head -1 | sed -E 's/^\s*\* Version:\s*([0-9.]+).*/\1/')
+          if [ -z "$VER" ]; then
+            echo "::error::Version okunamadı: $FILE"
+            exit 1
+          fi
+          echo "version=$VER" >> "$GITHUB_OUTPUT"
+          echo "tag=v${VER}" >> "$GITHUB_OUTPUT"
+
+      - name: Skip if release already exists
+        id: skip
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          TAG="${{ steps.meta.outputs.tag }}"
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+            echo "Release $TAG zaten var, atlanıyor."
+          else
+            echo "exists=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Build plugin zip (WordPress klasör yapısı)
+        if: steps.skip.outputs.exists == 'false'
+        run: |
+          set -e
+          # Kökte tek klasör: multi-branch-whatsapp-sticky-button/ — WP güncelleyici bunu bekler
+          zip -r multi-branch-whatsapp-sticky-button.zip multi-branch-whatsapp-sticky-button \
+            -x '*/.git/*' \
+            -x '*/node_modules/*' \
+            -x '*.zip'
+
+      - name: Create GitHub Release
+        if: steps.skip.outputs.exists == 'false'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          TAG="${{ steps.meta.outputs.tag }}"
+          VER="${{ steps.meta.outputs.version }}"
+          gh release create "$TAG" \
+            "multi-branch-whatsapp-sticky-button.zip" \
+            --title "v${VER}" \
+            --notes "Eklenti sürümü **${VER}**. WordPress güncellemesi için \`multi-branch-whatsapp-sticky-button.zip\` eklendi."

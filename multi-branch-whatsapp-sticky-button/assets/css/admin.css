@@ -1,0 +1,40 @@
+.mbwsb-admin-wrap .mbwsb-table {
+	margin-top: 1em;
+	max-width: 900px;
+}
+
+.mbwsb-admin-wrap .mbwsb-table th,
+.mbwsb-admin-wrap .mbwsb-table td {
+	vertical-align: middle;
+}
+
+.mbwsb-admin-wrap .mbwsb-col-actions {
+	width: 6rem;
+}
+
+.mbwsb-admin-wrap .mbwsb-remove-row {
+	color: #b32d2e;
+}
+
+.mbwsb-admin-wrap .mbwsb-remove-row:hover,
+.mbwsb-admin-wrap .mbwsb-remove-row:focus {
+	color: #8a2424;
+}
+
+.mbwsb-fieldset-position {
+	margin: 1.5em 0;
+	padding: 1em 1.25em;
+	border: 1px solid #c3c4c7;
+	border-radius: 4px;
+	max-width: 900px;
+}
+
+.mbwsb-fieldset-position legend {
+	font-weight: 600;
+	padding: 0 0.5em;
+}
+
+.mbwsb-fieldset-position label {
+	display: inline-block;
+	margin-right: 1.5em;
+}
